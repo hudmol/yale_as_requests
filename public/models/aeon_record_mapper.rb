@@ -63,7 +63,7 @@ class AeonRecordMapper
                 puts "Aeon Fulfillment Plugin -- Checking for top containers"
                 has_top_container = false
 
-                instances = self.record.dig('json', 'instances')
+                instances = self.record.json['instances']
                 if instances
                     instances.each do |instance|
 
@@ -72,7 +72,7 @@ class AeonRecordMapper
 
                         top_container_uri = sub_container.dig('top_container', 'ref')
 
-                        if top_container_uri.present?
+                        unless top_container_uri.nil?
                             has_top_container = true
                         end
                     end
@@ -113,7 +113,7 @@ class AeonRecordMapper
     # Pulls data from AppConfig and ASpace System
     def system_information
         mappings = {}
-        
+
         mappings['SystemID'] =
             if (!self.repo_settings[:aeon_external_system_id].blank?)
                 self.repo_settings[:aeon_external_system_id]
