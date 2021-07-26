@@ -36,7 +36,8 @@ class AeonRequestController < ApplicationController
 
     return render status: 400, text: "Unknown request type: #{params[:request_type]}" if request_type_config.nil?
 
-    mapper.requested_instance_indexes = params[:instance_idx].map{|idx| Integer(idx)}
+    mapper.requested_container_indexes = (params[:instance_idx] || []).map{|idx| Integer(idx)}
+    mapper.requested_digital_object_indexes = (params[:digital_instance_idx] || []).map{|idx| Integer(idx)}
     mapper.request_type = request_type_config.fetch(:request_type)
 
     render partial: 'aeon/aeon_request', locals: {

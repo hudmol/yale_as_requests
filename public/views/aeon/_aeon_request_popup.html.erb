@@ -13,7 +13,7 @@
             <label><input type="checkbox" id="aeonToggleAll"> <span class="sr-only">Toggle All Checkboxes</span></label>
           </th>
           <th>
-            Container Details
+            Container/Digital Object Details
           </th>
         </tr>
       </thead>
@@ -25,6 +25,17 @@
             </td>
             <td>
               <%= label_tag "aeon_instance_idx_#{index}", record.build_instance_display_string(instance) %>
+            </td>
+          </tr>
+        <% end %>
+        <% mapper.digital_object_instances.each_with_index do |instance, index| %>
+          <tr>
+            <td>
+              <%= check_box_tag 'digital_instance_idx[]', index, false, :id => "aeon_do_instance_idx_#{index}", :class => 'aeon_instance_ckbx' %>
+            </td>
+            <td>
+              <%= label_tag "aeon_do_instance_idx_#{index}", record.build_instance_display_string(instance) %>
+              <i class="fa fa-th" title="Record is a digital object"></i>
             </td>
           </tr>
         <% end %>

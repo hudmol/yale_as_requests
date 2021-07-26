@@ -8,7 +8,6 @@ mapper = AeonRecordMapper.mapper_for(record)
 <%= javascript_include_tag "#{@base_url}/assets/js/aeon_request_action.js" %>
 
 <% unless mapper.hide_button? %>
-
   <% if mapper.show_action? %>
 
     <button type="button" id="aeon_request_button" class="btn page_action request btn-default" title="<%= t('plugins.aeon_fulfillment.request_button_label') %>" data-uri="<%= record.uri %>">
