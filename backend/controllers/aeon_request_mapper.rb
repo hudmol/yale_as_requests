@@ -63,82 +63,8 @@ class ArchivesSpaceService < Sinatra::Base
           .returns([200, "{}"]) \
   do
     RequestContext.open(:enforce_suppression => true) do
-      base_search_params = {
-        :page => 1,
-        :page_size => AppConfig.has_key?(:aeon_client_max_results) ? AppConfig[:aeon_client_max_results] : 1000,
-      }
-
-      if AppConfig.has_key?(:aeon_client_repo_codes) && !ASUtils.wrap(AppConfig[:aeon_client_repo_codes]).empty?
-        repo_query = AdvancedQueryBuilder.new
-
-        repo_lookup = Repository.map {|repo| [repo.repo_code, repo.uri]}.to_h
-
-        ASUtils.wrap(AppConfig[:aeon_client_repo_codes]).each do |repo_code|
-          if repo_lookup.has_key?(repo_code)
-            repo_query = repo_query.or('repository', repo_lookup.fetch(repo_code), 'text', true)
-          else
-            raise "repository not found for #{repo_code}"
-          end
-        end
-
-        base_search_params[:filter] = repo_query.build
-      end
-
-      # find top containers
-      container_query = AdvancedQueryBuilder.new
-                          .and('barcode_u_sstr', params[:q], 'text', true)
-                          .or('title', params[:q])
-
-      search_params = base_search_params.merge({
-                                                 :type => ['top_container'],
-                                                 :aq => container_query.build,
-                                               })
-
-      aeon_grid_rows = Search.search(search_params, nil).fetch('results', [])
-                             .map{|result| ContainerRow.new(result) }
-
-      # find archival objects
-      ao_query = AdvancedQueryBuilder.new
-                                     .and('title', params[:q], 'text', true)
-                                     .or('component_id', params[:q], 'text', true)
-                                     .or('ref_id', params[:q], 'text', true)
-                                     .or('id', params[:q], 'text', true)
-                                     .and('types', 'pui', 'text', true, true)
-
-      search_params = base_search_params.merge({
-                                                 :type => ['archival_object'],
-                                                 :aq => ao_query.build,
-                                               })
-
-      Search.search(search_params, nil).fetch('results', []).each_slice(16) do |matching_aos|
-        ao_jsonmodels = matching_aos.map {|result|
-          JSONModel(:archival_object).from_hash(ASUtils.json_parse(result.fetch('json')),
-                                                false, true)
-        }
-
-        merged_record_hashes = RecordInheritance.merge(URIResolver.resolve_references(ao_jsonmodels, RESOLVE_PARAMS))
-
-        matching_aos.zip(merged_record_hashes).each do |result, inherited_json|
-          # identify those that are born digital
-          local_access_restriction_types = inherited_json['notes'].select {|n| n['type'] == 'accessrestrict' && n.has_key?('rights_restriction')}
-                                             .map {|n| n['rights_restriction']['local_access_restriction_type']}
-                                             .flatten.uniq
-
-          if local_access_restriction_types.include?('BornDigital')
-            aeon_grid_rows << BornDigitalRow.new(result, inherited_json)
-
-            next
-          end
-
-          # map those with container instances
-          ASUtils.wrap(result['top_container_uri_u_sstr']).each do |top_container_uri|
-            aeon_grid_rows << ContainerAndItemRow.new(result, inherited_json, top_container_uri)
-          end
-        end
-      end
-
       json_response(:columns => AeonGridRow.column_definitions,
-                    :requests => aeon_grid_rows.map{|row| row.to_aeon_grid_row})
+                    :requests => AeonGridRowPopulator.rows_for(params[:q], RESOLVE_PARAMS))
     end
   end
 
