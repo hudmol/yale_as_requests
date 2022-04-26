@@ -52,31 +52,9 @@
         self.$form.on('submit', function(event) {
             event.preventDefault();
 
-            if (!self.$form.is(':disabled')) {
-                $.ajax({
-                    url: self.$form.attr('action'),
-                    method: 'post',
-                    data: new FormData(self.$form[0]),
-                    processData: false,
-                    contentType: false,
-                    success: function(html) {
-                        $('#aeonRequestFormWrapper').remove();
-                        $(document.body).append('<div id="aeonRequestFormWrapper">');
-                        $('#aeonRequestFormWrapper').html(html);
-                        $('#aeonRequestFormWrapper form').submit();
-                        self.$modal.modal('hide');
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        $('#aeonFormSubmit').prop('disabled', false);
-                        self.$modal.find('.modal-body').html(errorThrown);
-
-                        if (jqXHR.responseText) {
-                            self.$modal.find('.modal-body').append('<div>' + jqXHR.responseText + '</div>');
-                        }
-                    }
-                });
-
-                self.$form.find('#aeonFormSubmit').prop('disabled', true);
+            if (!self.$form.is(':disabled') && $('#aeonRequestFormWrapper form').length === 1) {
+                $('#aeonRequestFormWrapper form').submit();
+                self.$modal.modal('hide');
             }
         });
 
@@ -86,11 +64,47 @@
         }
     }
 
+    AeonRequestForm.prototype.refreshRequestFormTimeout = undefined;
+    AeonRequestForm.prototype.refreshRequestForm = function() {
+        const self = this;
+        self.$form.find('#aeonFormSubmit').prop('disabled', true);
+
+        if (self.refreshRequestFormTimeout !== undefined) {
+            clearTimeout(self.refreshRequestFormTimeout)
+        }
+
+        self.refreshRequestFormTimeout = setTimeout(() => {
+            $.ajax({
+                url: self.$form.attr('action'),
+                method: 'post',
+                data: new FormData(self.$form[0]),
+                processData: false,
+                contentType: false,
+                success: function(html) {
+                    $('#aeonRequestFormWrapper').remove();
+                    $(document.body).append('<div id="aeonRequestFormWrapper">');
+                    $('#aeonRequestFormWrapper').html(html);
+                    self.$form.find('#aeonFormSubmit').prop('disabled', false);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    $('#aeonFormSubmit').prop('disabled', false);
+                    self.$modal.find('.modal-body').html(errorThrown);
+
+                    if (jqXHR.responseText) {
+                        self.$modal.find('.modal-body').append('<div>' + jqXHR.responseText + '</div>');
+                    }
+                }
+            });
+        }, 500);
+    };
+
     AeonRequestForm.prototype.refreshFormStatus = function() {
         const self = this;
         if (self.$form.find('table tbody .aeon_requestable_item_input:checked').length > 0) {
             self.$form.prop('disabled', false);
             self.$form.find('#aeonFormSubmit').prop('disabled', false);
+
+            self.refreshRequestForm();
         } else {
             self.$form.prop('disabled', true);
             self.$form.find('#aeonFormSubmit').prop('disabled', true);
