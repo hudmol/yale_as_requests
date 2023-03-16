@@ -43,10 +43,18 @@ class AeonRecordMapper
           resolved_top_containers[container_ref] = ASUtils.json_parse(resolved_results.fetch(0).fetch('json'))
       end
 
+      resolved_digital_objects = []
+      ASUtils.wrap(self.record.json['instances']).each do |instance|
+          if digital_object = instance.dig('digital_object', '_resolved')
+              resolved_digital_objects << digital_object
+          end
+      end
+
       result = AeonRequest.build(self.record.json,
                                  :resource => self.record.resolved_resource,
                                  :selected_container_instances => selected_container_instances,
-                                 :resolved_top_containers => resolved_top_containers)
+                                 :resolved_top_containers => resolved_top_containers,
+                                 :resolved_digital_objects => resolved_digital_objects)
 
       extra_params.each do |field, value|
         result[field] = value

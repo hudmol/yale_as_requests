@@ -17,6 +17,7 @@ class ArchivesSpaceService < Sinatra::Base
     'container_profile',
     'container_locations',
     'active_restrictions::linked_records',
+    'instances::digital_object',
   ]
 
   Endpoint.get('/plugins/aeon_request')
