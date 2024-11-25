@@ -12,7 +12,7 @@ en:
       request_digital_copy_help_text: Obtain a digitized version of this item.
       select_all: Select All
       clear_all: Clear All
-      submit_request_label: Submit Request
+      submit_request_label: Continue
       close_popup_label: Cancel
       request_unavailable_warning: Record is not available for request.
       toggle_column_label: Toggle selection
