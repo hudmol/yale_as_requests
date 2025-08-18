@@ -32,8 +32,8 @@
 
       <% unless mapper.request_type == AeonRecordMapper::REQUEST_TYPE_PHOTODUPLICATION %>
         <div>
-          <a class="btn btn-primary btn-xs acc_button aeon_select_all" role="button"><%= t('plugins.aeon_fulfillment.select_all') %></a>
-          <a class="btn btn-primary btn-xs acc_button aeon_clear_all" role="button"><%= t('plugins.aeon_fulfillment.clear_all') %></a>
+          <button type="button" class="btn btn-primary btn-sm acc_button aeon_select_all" role="button"><%= t('plugins.aeon_fulfillment.select_all') %></button>
+          <button type="button" class="btn btn-primary btn-sm acc_button aeon_clear_all" role="button"><%= t('plugins.aeon_fulfillment.clear_all') %></button>
         </div>
       <% end %>
 
